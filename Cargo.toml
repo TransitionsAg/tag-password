@@ -1,0 +1,12 @@
+[package]
+name = "tag-password"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+argon2 = { version = "0.5.2", optional = true }
+rand_core = { version = "0.6.4", features = ["getrandom"], optional = true }
+
+[features]
+default = ["argon2"]
+argon2 = ["dep:argon2", "dep:rand_core"]
