@@ -1,9 +1,5 @@
-use argon2::PasswordHash;
 #[cfg(feature = "argon2")]
-use argon2::{
-    password_hash::{Error, Result, Salt},
-    Argon2, PasswordHasher,
-};
+use argon2::{password_hash::Salt, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 use std::{
     fmt::{Debug, Display},
     marker::PhantomData,
@@ -31,64 +27,106 @@ pub struct Plain;
 /// This struct encapsulates password data and supports hashing with the `hash` function,
 /// which can be enabled with the `argon2` feature. It also provides verification
 /// functionality via the `verify` function.
+#[derive(Clone)]
 pub struct Password<T: ?Sized>(PhantomData<T>, String);
 
 impl<T: ?Sized> Password<T> {
+    /// Creates a new `Password` instance from the provided value.
+    ///
+    /// # Arguments
+    ///
+    /// * `value`: A value that can be converted into a `String`.
+    ///
+    /// Returns a new `Password` instance with the provided value.
     pub fn new(value: impl Into<String>) -> Self {
         Password(Default::default(), value.into())
     }
 
+    /// Retrieves the byte representation of the password value.
+    ///
+    /// Returns a slice containing the bytes representing the password.
     pub fn as_bytes(&self) -> &[u8] {
         self.1.as_bytes()
     }
 }
 
 impl Password<Plain> {
-    pub fn as_hashed(self) -> Password<Hashed> {
+    /// Converts a plain text password into a hashed password.
+    ///
+    /// Returns a new `Password` instance containing the hashed password.
+    pub unsafe fn as_hashed(self) -> Password<Hashed> {
         Password::new(self.1)
     }
 
+    /// Hashes the password using Argon2 (if the 'argon2' feature is enabled).
+    ///
+    /// - `argon2`: An optional `Argon2` configuration.
+    /// - `salt`: A salt value used for hashing.
+    ///
+    /// Produces a result containing a new `Password` instance with the hashed value if successful.
+    /// If hashing fails, an `argon2::password_hash::Result` with an error is returned.
     #[cfg(feature = "argon2")]
     pub fn hash<'a>(
-        self,
+        &self,
         argon2: Option<Argon2>,
         salt: impl Into<Salt<'a>>,
-    ) -> Result<Password<Hashed>> {
+    ) -> argon2::password_hash::Result<Password<Hashed>> {
         let v = self.1.as_bytes();
         Ok(Password::new(
             argon2
                 .unwrap_or_default()
                 .hash_password(v, salt)?
-                .hash
-                .ok_or(Error::Password)?
                 .to_string(),
         ))
     }
 }
 
 impl Password<Hashed> {
-    pub fn as_plain(self) -> Password<Plain> {
+    /// Unsafely converts a hashed password into a plain text password.
+    /// This operation is marked as unsafe because once a password is hashed,
+    /// it cannot be converted back to plain text.
+    ///
+    /// Returns a new `Password` instance containing the plain text password.
+    pub unsafe fn as_plain(self) -> Password<Plain> {
         Password::new(self.1)
     }
 
-    pub fn verify(argon2: Option<Argon2>, plain: impl Into<Password<Plain>>) {
-        // TODO
+    /// Verifies if the hashed password matches the provided plain text password.
+    ///
+    /// - `argon2`: An optional `Argon2` configuration.
+    /// - `plain`: A plain text password used for verification.
+    ///
+    /// Returns a result indicating success or failure of the verification process.
+    /// If successful, `Ok(())` is returned. If verification fails, an
+    /// `argon2::password_hash::Result` with an error is returned.
+
+    pub fn verify(
+        &self,
+        argon2: Option<Argon2>,
+        plain: impl Into<Password<Plain>>,
+    ) -> argon2::password_hash::Result<()> {
+        argon2
+            .unwrap_or_default()
+            .verify_password(plain.into().as_bytes(), &PasswordHash::new(&self.1)?)
     }
 }
 
 impl<T: ?Sized> Into<String> for Password<T> {
+    /// Converts the `Password` instance into a `String`.
     fn into(self) -> String {
         self.1
     }
 }
 
 impl<T: ?Sized> Debug for Password<T> {
+    /// Formats the `Password` for debugging purposes.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.1)
     }
 }
 
 impl<T: ?Sized> Display for Password<T> {
+    /// Formats the `Password` for displaying purposes.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.1)
     }
@@ -102,12 +140,16 @@ mod tests {
     use crate::Password;
 
     #[test]
-    fn argon_encoding() {
-        let plain_password = Password::new("AZDAIZDIAZNDAIZDNIAZDNIAZD");
+    fn argon_encoding_decoding() {
+        let plain_password = Password::new("Password");
         let salt = SaltString::generate(&mut OsRng);
+
         let argon_encoded_password = plain_password
             .hash(None, &salt)
             .expect("Argon2 encoding should not fail.");
-        println!("{}", argon_encoded_password)
+
+        argon_encoded_password
+            .verify(None, plain_password)
+            .expect("Argon2 encoded password verification should not fail.");
     }
 }
