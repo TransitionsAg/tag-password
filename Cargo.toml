@@ -1,5 +1,12 @@
 [package]
 name = "tag_password"
+description = "An advanced Rust library leveraging the type system to statically determine password hashing status for enhanced security."
+license = "MIT"
+license-file = "LICENSE"
+documentation = "https://docs.rs/tag_password"
+homepage = "https://devs.transitions.ag/"
+repository = "https://github.com/TransitionsAg/tag_password"
+readme = "README.md"
 version = "0.1.0"
 edition = "2021"
 
