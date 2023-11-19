@@ -1,5 +1,5 @@
 [package]
-name = "tag-password"
+name = "tag_password"
 version = "0.1.0"
 edition = "2021"
 
