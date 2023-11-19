@@ -6,7 +6,7 @@
 
 - **Type-based Password Markers:** Two marker types, Hashed and Plain, are used to distinguish between hashed and plain text passwords. These zero-sized types, combined with PhantomData, facilitate compile-time checks for password status.
 
-**Argon2 Hashing (Optional):** If the argon2 feature is enabled, the library provides hashing functionality using Argon2, a secure password hashing algorithm.
+- **Argon2 Hashing (Optional):** If the argon2 feature is enabled, the library provides hashing functionality using Argon2, a secure password hashing algorithm.
 
 ## Usage
 
