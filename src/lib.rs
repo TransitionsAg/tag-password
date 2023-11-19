@@ -25,8 +25,11 @@
 //!
 //! ```rust
 //! use tag_password::Password;
+//! use argon2::password_hash::SaltString;
+//! use rand_core::OsRng;
 //!
 //! // Create a new plain text password
+//! let salt = SaltString::generate(&mut OsRng);
 //! let plain_password = Password::new("my_password");
 //! // Hash the plain text password using Argon2
 //! let hashed_password = plain_password
