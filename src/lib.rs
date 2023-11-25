@@ -168,6 +168,12 @@ impl<T: ?Sized> Into<String> for Password<T> {
     }
 }
 
+impl<T: ?Sized> From<String> for Password<T> {
+    fn from(value: String) -> Self {
+        Password(Default::default(), value)
+    }
+}
+
 impl<T: ?Sized> Debug for Password<T> {
     /// Formats the `Password` for debugging purposes.
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
