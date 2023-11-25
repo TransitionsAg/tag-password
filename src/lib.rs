@@ -62,6 +62,7 @@ use std::{
 /// It serves as a zero-sized type without any fields, consuming no memory at runtime.
 /// When paired with `PhantomData`, it enables compile-time checks to distinguish
 /// between hashed and non-hashed password types.
+#[derive(Clone, PartialEq, Eq)]
 pub struct Hashed;
 
 /// Marker type indicating a plain text password.
@@ -71,6 +72,7 @@ pub struct Hashed;
 /// zero-sized type without any fields, consuming no memory at runtime.
 /// When paired with `PhantomData`, it enables compile-time checks to differentiate
 /// between plain text and hashed password types.
+#[derive(Clone, PartialEq, Eq)]
 pub struct Plain;
 
 /// Represents password data that can be hashed and verified.
@@ -78,7 +80,7 @@ pub struct Plain;
 /// This struct encapsulates password data and supports hashing with the `hash` function,
 /// which can be enabled with the `argon2` feature. It also provides verification
 /// functionality via the `verify` function.
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Password<T: ?Sized>(PhantomData<T>, String);
 

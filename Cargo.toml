@@ -6,7 +6,7 @@ documentation = "https://docs.rs/tag_password"
 homepage = "https://devs.transitions.ag/"
 repository = "https://github.com/TransitionsAg/tag_password"
 readme = "README.md"
-version = "0.1.3-pre3"
+version = "0.1.3"
 edition = "2021"
 
 [dependencies]
