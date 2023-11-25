@@ -11,6 +11,7 @@ edition = "2021"
 
 [dependencies]
 argon2 = { version = "0.5.2", optional = true }
+async-graphql = { version = "6.0.11", optional = true }
 rand_core = { version = "0.6.4", features = ["getrandom"], optional = true }
 serde = { version = "1.0.193", features = ["derive"], optional = true }
 
@@ -18,3 +19,4 @@ serde = { version = "1.0.193", features = ["derive"], optional = true }
 default = ["argon2", "serde"]
 argon2 = ["dep:argon2", "dep:rand_core"]
 serde = ["dep:serde"]
+graphql = ["dep:async-graphql"]

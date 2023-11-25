@@ -45,8 +45,11 @@
 //!
 //! This project is licensed under the [MIT License](LICENSE).
 
+use argon2::password_hash::Value;
 #[cfg(feature = "argon2")]
 use argon2::{password_hash::Salt, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+#[cfg(feature = "graphql")]
+use async_graphql::{registry::Registry, InputType};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
@@ -168,7 +171,40 @@ impl<T: ?Sized> Into<String> for Password<T> {
     }
 }
 
+#[cfg(feature = "graphql")]
+impl<T: ?Sized + Send + Sync> InputType for Password<T> {
+    type RawValueType = String;
+
+    fn type_name() -> std::borrow::Cow<'static, str> {
+        "Password".into()
+    }
+
+    fn create_type_info(_: &mut Registry) -> String {
+        "A password".into()
+    }
+
+    fn parse(value: Option<async_graphql::Value>) -> async_graphql::InputValueResult<Self> {
+        if value.is_none() {
+            return Err("A password must have a value.".into());
+        }
+
+        match value.unwrap() {
+            async_graphql::Value::String(text) => Ok(Password::new(text)),
+            _ => Err("A password must be a String.".into()),
+        }
+    }
+
+    fn to_value(&self) -> async_graphql::Value {
+        async_graphql::Value::String(self.1.clone())
+    }
+
+    fn as_raw_value(&self) -> Option<&Self::RawValueType> {
+        Some(&self.1)
+    }
+}
+
 impl<T: ?Sized> From<String> for Password<T> {
+    /// Converts the `String` instance to a `Password`.
     fn from(value: String) -> Self {
         Password(Default::default(), value)
     }
