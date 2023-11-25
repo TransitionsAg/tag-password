@@ -45,14 +45,14 @@
 //!
 //! This project is licensed under the [MIT License](LICENSE).
 
-use argon2::password_hash::Value;
 #[cfg(feature = "argon2")]
 use argon2::{password_hash::Salt, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
 #[cfg(feature = "graphql")]
-use async_graphql::{registry::Registry, InputType};
+use async_graphql::{registry::MetaType, registry::MetaTypeId, registry::Registry, InputType};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
+    borrow::Cow,
     fmt::{Debug, Display},
     marker::PhantomData,
 };
@@ -175,12 +175,20 @@ impl<T: ?Sized> Into<String> for Password<T> {
 impl<T: ?Sized + Send + Sync> InputType for Password<T> {
     type RawValueType = String;
 
-    fn type_name() -> std::borrow::Cow<'static, str> {
-        "Password".into()
+    fn type_name() -> Cow<'static, str> {
+        Cow::Borrowed("Password")
     }
 
-    fn create_type_info(_: &mut Registry) -> String {
-        "A password".into()
+    fn create_type_info(registry: &mut Registry) -> String {
+        registry.create_input_type(MetaTypeId::Scalar, |_| MetaType::Scalar {
+            name: "Password".into(),
+            description: "A type used internally to represent a password.".into(),
+            is_valid: None,
+            visible: None,
+            inaccessible: false,
+            tags: Default::default(),
+            specified_by_url: None,
+        })
     }
 
     fn parse(value: Option<async_graphql::Value>) -> async_graphql::InputValueResult<Self> {
