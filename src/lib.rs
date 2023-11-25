@@ -52,7 +52,6 @@ use async_graphql::{registry::MetaType, registry::MetaTypeId, registry::Registry
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::{
-    borrow::Cow,
     fmt::{Debug, Display},
     marker::PhantomData,
 };
@@ -175,14 +174,14 @@ impl<T: ?Sized> Into<String> for Password<T> {
 impl<T: ?Sized + Send + Sync> InputType for Password<T> {
     type RawValueType = String;
 
-    fn type_name() -> Cow<'static, str> {
-        Cow::Borrowed("Password")
+    fn type_name() -> std::borrow::Cow<'static, str> {
+        std::borrow::Cow::Borrowed("Password")
     }
 
     fn create_type_info(registry: &mut Registry) -> String {
-        registry.create_input_type(MetaTypeId::Scalar, |_| MetaType::Scalar {
+        registry.create_input_type::<Password<T>, _>(MetaTypeId::Scalar, |_| MetaType::Scalar {
             name: "Password".into(),
-            description: "A type used internally to represent a password.".into(),
+            description: Some("A type used internally to represent a password.".into()),
             is_valid: None,
             visible: None,
             inaccessible: false,
