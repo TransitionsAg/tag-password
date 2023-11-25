@@ -47,6 +47,8 @@
 
 #[cfg(feature = "argon2")]
 use argon2::{password_hash::Salt, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::{
     fmt::{Debug, Display},
     marker::PhantomData,
@@ -75,6 +77,7 @@ pub struct Plain;
 /// which can be enabled with the `argon2` feature. It also provides verification
 /// functionality via the `verify` function.
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Password<T: ?Sized>(PhantomData<T>, String);
 
 impl<T: ?Sized> Password<T> {

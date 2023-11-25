@@ -12,7 +12,9 @@ edition = "2021"
 [dependencies]
 argon2 = { version = "0.5.2", optional = true }
 rand_core = { version = "0.6.4", features = ["getrandom"], optional = true }
+serde = { version = "1.0.193", features = ["derive"], optional = true }
 
 [features]
-default = ["argon2"]
+default = ["argon2", "serde"]
 argon2 = ["dep:argon2", "dep:rand_core"]
+serde = ["dep:serde"]
